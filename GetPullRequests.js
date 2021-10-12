@@ -109,6 +109,24 @@ async function start() {
     }
   }
 
+  console.log();
+  console.log("Bye!");
+
+  console.log(
+    `  ,-.       _,---._ __  / \\
+ /  )    .-'       \`./ /   \\
+(  (   ,'            \`/    /|
+ \\  \`-"             \\\'\\   / |
+  \`.              ,  \\ \\ /  |
+   /\`.          ,'-\`----Y   |
+  (            ;        |   '
+  |  ,-.    ,-'         |  /
+  |  | (   |            | /
+  )  |  \\  \`.___________|/
+  \`--'   \`--'`
+  );
+  console.log("ASCII art by hjw");
+
   process.exit();
 }
 

@@ -8,6 +8,6 @@ Also make sure you have NodeJS installed.
 
 Then simply run the GitPull by typing thus command:
 ```
-./GitPull.js
+node GitPull.js
 ```
 Have fun!  

@@ -1,5 +1,13 @@
 "use strict";
+const { Octokit } = require("@octokit/core");
+const {
+  paginateRest,
+  composePaginateRest,
+} = require("@octokit/plugin-paginate-rest");
 const readline = require("readline");
+
+const MyOctokit = Octokit.plugin(paginateRest);
+const octokit = new MyOctokit();
 
 const readLineInterface = readline.createInterface({
   input: process.stdin,
@@ -16,6 +24,7 @@ const REPO_NAME_REGEX_CONSTRAINTS = new RegExp(/^[a-zA-Z0-9._-]+$/, "gi");
 let selectedRepo = {
   owner: "",
   repo: "",
+  per_page: 100,
 };
 
 function getRepoOwner() {
@@ -48,7 +57,31 @@ async function start() {
     selectedRepo.repo = await getRepoName();
   }
 
-  console.log(`owner: ${selectedRepo.owner} name: ${selectedRepo.repo}`);
+  try {
+    console.log(
+      `Excellent! Querying ${selectedRepo.owner}/${selectedRepo.repo} for open PRs!`
+    );
+
+    const response = await octokit.paginate(
+      "GET /repos/{owner}/{repo}/pulls",
+      selectedRepo
+    );
+
+    const numOpenPullReq = response
+      .map((pullReq) => pullReq.state)
+      .reduce(
+        (acc, pullReqState) => (pullReqState === "open" ? ++acc : acc),
+        0
+      );
+
+    console.log(`# of open PR: ${numOpenPullReq}`);
+
+    const rateLimit = await octokit.request("GET /rate_limit");
+
+    console.log(rateLimit.data.rate.remaining);
+  } catch (err) {
+    console.error(err.status);
+  }
 
   process.exit();
 }

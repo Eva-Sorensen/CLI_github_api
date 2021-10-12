@@ -39,6 +39,13 @@ function getRepoName() {
   );
 }
 
+function getRemainingTime(unixTime) {
+  const remainingTime = unixTime - Math.floor(Date.now() / 1000);
+  const mins = Math.floor(remainingTime / 60);
+  const secs = remainingTime % 60;
+  return `${(mins + "").padStart(2, "0")}:${(secs + "").padStart(2, "0")}`;
+}
+
 async function start() {
   console.log("Welcome to Multitudes CLI! Let’s process some Github Data!");
   console.log();
@@ -57,30 +64,39 @@ async function start() {
     selectedRepo.repo = await getRepoName();
   }
 
-  try {
+  console.log();
+
+  const rateLimit = await octokit.request("GET /rate_limit");
+
+  if (rateLimit.data.rate.remaining === 0) {
+    console.log("Request quota exhausted");
     console.log(
-      `Excellent! Querying ${selectedRepo.owner}/${selectedRepo.repo} for open PRs!`
+      `Please retry after ${getRemainingTime(
+        rateLimit.data.rate.reset
+      )} minutes`
     );
-
-    const response = await octokit.paginate(
-      "GET /repos/{owner}/{repo}/pulls",
-      selectedRepo
-    );
-
-    const numOpenPullReq = response
-      .map((pullReq) => pullReq.state)
-      .reduce(
-        (acc, pullReqState) => (pullReqState === "open" ? ++acc : acc),
-        0
+  } else {
+    try {
+      console.log(
+        `Excellent! Querying ${selectedRepo.owner}/${selectedRepo.repo} for open PRs!`
       );
 
-    console.log(`# of open PR: ${numOpenPullReq}`);
+      const response = await octokit.paginate(
+        "GET /repos/{owner}/{repo}/pulls",
+        selectedRepo
+      );
 
-    const rateLimit = await octokit.request("GET /rate_limit");
+      const numOpenPullReq = response
+        .map((pullReq) => pullReq.state)
+        .reduce(
+          (acc, pullReqState) => (pullReqState === "open" ? ++acc : acc),
+          0
+        );
 
-    console.log(rateLimit.data.rate.remaining);
-  } catch (err) {
-    console.error(err.status);
+      console.log(`# of open PR: ${numOpenPullReq}`);
+    } catch (err) {
+      console.error(err.status);
+    }
   }
 
   process.exit();

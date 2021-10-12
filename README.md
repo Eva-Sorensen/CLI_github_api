@@ -3,8 +3,7 @@ A command-line interface to extract data from Github. It extracts number of open
 
 ## How to run
 
-Make sure you are in the correct directory (contains GitPull.js)  
-Also make sure you have NodeJS installed.
+Make sure you are in the correct directory and you have NodeJS installed.
 
 Then simply run the GitPull by typing thus command:
 ```

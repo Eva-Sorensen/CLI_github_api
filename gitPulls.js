@@ -81,6 +81,8 @@ async function start() {
         `Excellent! Querying ${selectedRepo.owner}/${selectedRepo.repo} for open PRs!`
       );
 
+      console.log();
+
       const response = await octokit.paginate(
         "GET /repos/{owner}/{repo}/pulls",
         selectedRepo
@@ -95,7 +97,15 @@ async function start() {
 
       console.log(`# of open PR: ${numOpenPullReq}`);
     } catch (err) {
-      console.error(err.status);
+      console.log("We encounted an error.");
+      switch (err.status) {
+        case 404:
+          console.log("Repository not found.");
+          break;
+        case 500:
+          console.log("Internal server error.");
+          break;
+      }
     }
   }
 
